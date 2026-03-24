@@ -2,7 +2,7 @@
 
 A native macOS app for testing MLX language models locally. Pick a model, load it, and chat — all running on Apple Silicon via [MLX](https://github.com/ml-explore/mlx).
 
-![MLX Tester Screenshot](screenshot.png)
+![MLX Tester Screenshot](screenshots/mlx_tester.png)
 
 ## Features
 
