@@ -78,13 +78,23 @@ final class ProcessLauncher: ObservableObject {
     private var stdinPipe: Pipe?
     private var stdoutPipe: Pipe?
     private var currentResponseIndex: Int?
-    private let pythonPath = "/Library/Frameworks/Python.framework/Versions/3.13/bin/python3"
+    private var pythonPath: String {
+        // Prefer bundled venv Python inside the .app
+        if let bundled = Bundle.main.resourceURL?
+            .appendingPathComponent("venv/bin/python3").path,
+           FileManager.default.fileExists(atPath: bundled) {
+            return bundled
+        }
+        // Fallback: system Python for development
+        return "/Library/Frameworks/Python.framework/Versions/3.13/bin/python3"
+    }
 
     private var scriptsDir: URL {
-        let candidates = [
+        let candidates: [URL] = [
+            Bundle.main.resourceURL?.appendingPathComponent("Scripts"),
             URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appendingPathComponent("Scripts"),
             URL(fileURLWithPath: "/Users/tim/mlx_tester/Scripts"),
-        ]
+        ].compactMap { $0 }
         return candidates.first {
             FileManager.default.fileExists(atPath: $0.appendingPathComponent("mlx_interactive.py").path)
         } ?? candidates.last!
