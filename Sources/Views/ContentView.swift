@@ -79,76 +79,85 @@ struct ModelPanel: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Models")
                 .font(.headline)
+                .padding(.horizontal)
+                .padding(.top)
 
-            ForEach(ModelPreset.presets) { preset in
-                let isActive = launcher.modelState.modelName == preset.repo
-                let isLoading = isActive && !launcher.modelState.isReady
-                HStack {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(preset.name)
-                            .font(.callout.bold())
-                        Text(preset.sizeLabel)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    Spacer()
-                    if isActive {
-                        if isLoading {
-                            ProgressView().controlSize(.small)
-                        } else if launcher.modelState.isReady {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundStyle(.green)
+            ScrollView {
+                LazyVStack(spacing: 4) {
+                    ForEach(ModelPreset.presets) { preset in
+                        let isActive = launcher.modelState.modelName == preset.repo
+                        let isLoading = isActive && !launcher.modelState.isReady
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(preset.name)
+                                    .font(.callout.bold())
+                                Text(preset.sizeLabel)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                            if isActive {
+                                if isLoading {
+                                    ProgressView().controlSize(.small)
+                                } else if launcher.modelState.isReady {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundStyle(.green)
+                                }
+                            }
+                        }
+                        .padding(.vertical, 6)
+                        .padding(.horizontal, 10)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(isActive ? Color.purple.opacity(0.12) : Color.clear)
+                        )
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            guard !isLoading else { return }
+                            launcher.loadModel(preset.repo)
                         }
                     }
                 }
-                .padding(.vertical, 6)
-                .padding(.horizontal, 10)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(isActive ? Color.purple.opacity(0.12) : Color.clear)
-                )
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    guard !isLoading else { return }
-                    launcher.loadModel(preset.repo)
-                }
+                .padding(.horizontal)
             }
 
             Divider()
+                .padding(.horizontal)
 
-            Text("Custom Model")
-                .font(.subheadline.bold())
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Custom Model")
+                    .font(.subheadline.bold())
 
-            HStack {
-                TextField("mlx-community/...", text: $customRepo)
-                    .textFieldStyle(.roundedBorder)
-                    .font(.caption.monospaced())
+                HStack {
+                    TextField("mlx-community/...", text: $customRepo)
+                        .textFieldStyle(.roundedBorder)
+                        .font(.caption.monospaced())
 
-                Button("Load") {
-                    guard !customRepo.isEmpty else { return }
-                    launcher.loadModel(customRepo)
+                    Button("Load") {
+                        guard !customRepo.isEmpty else { return }
+                        launcher.loadModel(customRepo)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
+                    .tint(.purple)
+                    .disabled(customRepo.isEmpty)
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.small)
-                .tint(.purple)
-                .disabled(customRepo.isEmpty)
-            }
 
-            Spacer()
-
-            if launcher.modelState.isReady || launcher.modelState != .idle {
-                Button(role: .destructive) {
-                    launcher.stopProcess()
-                } label: {
-                    Label("Unload Model", systemImage: "xmark.circle")
-                        .frame(maxWidth: .infinity)
+                if launcher.modelState.isReady || launcher.modelState != .idle {
+                    Button(role: .destructive) {
+                        launcher.stopProcess()
+                    } label: {
+                        Label("Unload Model", systemImage: "xmark.circle")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
                 }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
             }
+            .padding(.horizontal)
+            .padding(.bottom)
         }
-        .padding()
     }
 }
 
